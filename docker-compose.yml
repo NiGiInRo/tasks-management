@@ -35,5 +35,27 @@ services:
       timeout: 5s
       retries: 5
 
+  server:
+    build: ./server
+    container_name: tasks-management-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/tasks_management
+      PORT: 3001
+    ports:
+      - "3001:3001"
+
+  client:
+    build: ./client
+    container_name: tasks-management-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:4173"
+
 volumes:
   db_data:

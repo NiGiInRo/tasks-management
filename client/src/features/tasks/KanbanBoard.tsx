@@ -13,6 +13,7 @@ import { TASK_STATUSES } from '../../api/tasks';
 import { useCreateTask, useTasks, useUpdateTask } from './queries';
 import { TaskForm } from './TaskForm';
 import { KanbanColumn } from './KanbanColumn';
+import './KanbanBoard.css';
 
 interface KanbanBoardProps {
   projectId: string;
@@ -55,33 +56,37 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   }
 
   if (isError) {
-    return <p role="alert">Error al cargar tareas: {error.message}</p>;
+    return <p role="alert" className="alert-error">Error al cargar tareas: {error.message}</p>;
   }
 
   const tasksByStatus = groupByStatus(tasks ?? []);
 
   return (
     <div>
-      {isCreating ? (
-        <TaskForm
-          isSubmitting={createTask.isPending}
-          onCancel={() => setIsCreating(false)}
-          onSubmit={({ title, description, priority }) => {
-            createTask.mutate(
-              { title, priority, ...(description ? { description } : {}) },
-              { onSuccess: () => setIsCreating(false) },
-            );
-          }}
-        />
-      ) : (
-        <button onClick={() => setIsCreating(true)}>Nueva tarea</button>
-      )}
+      <div className="kanban-board__toolbar">
+        {isCreating ? (
+          <TaskForm
+            isSubmitting={createTask.isPending}
+            onCancel={() => setIsCreating(false)}
+            onSubmit={({ title, description, priority }) => {
+              createTask.mutate(
+                { title, priority, ...(description ? { description } : {}) },
+                { onSuccess: () => setIsCreating(false) },
+              );
+            }}
+          />
+        ) : (
+          <button className="btn btn-primary" onClick={() => setIsCreating(true)}>
+            Nueva tarea
+          </button>
+        )}
 
-      {createTask.isError && <p role="alert">{createTask.error.message}</p>}
-      {updateTask.isError && <p role="alert">{updateTask.error.message}</p>}
+        {createTask.isError && <p role="alert" className="alert-error">{createTask.error.message}</p>}
+        {updateTask.isError && <p role="alert" className="alert-error">{updateTask.error.message}</p>}
+      </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <div className="kanban-board">
           {TASK_STATUSES.map((status) => (
             <KanbanColumn key={status} status={status} tasks={tasksByStatus[status]} />
           ))}

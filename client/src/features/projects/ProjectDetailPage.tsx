@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useProject } from './queries';
 import { KanbanBoard } from '../tasks/KanbanBoard';
+import './ProjectDetailPage.css';
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -8,14 +9,16 @@ export function ProjectDetailPage() {
 
   return (
     <div>
-      <Link to="/projects">← Volver a proyectos</Link>
+      <Link to="/projects" className="back-link">← Volver a proyectos</Link>
 
       {isLoading && <p>Cargando proyecto...</p>}
-      {isError && <p role="alert">Error: {error.message}</p>}
+      {isError && <p role="alert" className="alert-error">Error: {error.message}</p>}
       {project && (
         <>
-          <h1>{project.name}</h1>
-          <p>{project.description}</p>
+          <div className="project-header">
+            <h1>{project.name}</h1>
+            <p className="muted">{project.description}</p>
+          </div>
           <KanbanBoard projectId={project.id} />
         </>
       )}

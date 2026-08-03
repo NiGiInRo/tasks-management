@@ -1,16 +1,11 @@
 import { useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import type { Task, TaskPriority } from '../../api/tasks';
+import type { Task } from '../../api/tasks';
 import { PRIORITY_LABELS } from '../../api/tasks';
 import { TaskForm } from './TaskForm';
 import { useDeleteTask, useUpdateTask } from './queries';
-
-const PRIORITY_COLOR: Record<TaskPriority, string> = {
-  LOW: '#6b7280',
-  MEDIUM: '#b45309',
-  HIGH: '#b91c1c',
-};
+import './TaskCard.css';
 
 interface TaskCardProps {
   task: Task;
@@ -42,7 +37,7 @@ export function TaskCard({ task }: TaskCardProps) {
             );
           }}
         />
-        {updateTask.isError && <p role="alert">{updateTask.error.message}</p>}
+        {updateTask.isError && <p role="alert" className="alert-error">{updateTask.error.message}</p>}
       </li>
     );
   }
@@ -52,31 +47,45 @@ export function TaskCard({ task }: TaskCardProps) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      style={{
-        transform: CSS.Translate.toString(transform),
-        opacity: isDragging ? 0.5 : 1,
-        cursor: 'grab',
-      }}
+      className={`card task-card${isDragging ? ' task-card--dragging' : ''}`}
+      style={{ transform: CSS.Translate.toString(transform) }}
     >
-      <strong>{task.title}</strong>{' '}
-      <span style={{ color: PRIORITY_COLOR[task.priority] }}>{PRIORITY_LABELS[task.priority]}</span>
-      {task.description && <p>{task.description}</p>}
+      <div className="task-card__header">
+        <strong className="task-card__title">{task.title}</strong>
+        <span className={`badge badge-${task.priority.toLowerCase()}`}>
+          {PRIORITY_LABELS[task.priority]}
+        </span>
+      </div>
 
-      <button onClick={() => setIsEditing(true)}>Editar</button>
+      {task.description && <p className="task-card__description">{task.description}</p>}
 
-      {isConfirmingDelete ? (
-        <>
-          <span>¿Eliminar esta tarea?</span>
-          <button onClick={() => deleteTask.mutate(task.id)} disabled={deleteTask.isPending}>
-            Sí, eliminar
+      <div className="task-card__actions">
+        <button className="btn btn-secondary" onClick={() => setIsEditing(true)}>
+          Editar
+        </button>
+
+        {isConfirmingDelete ? (
+          <span className="confirm-delete">
+            ¿Eliminar esta tarea?
+            <button
+              className="btn btn-danger"
+              onClick={() => deleteTask.mutate(task.id)}
+              disabled={deleteTask.isPending}
+            >
+              Sí, eliminar
+            </button>
+            <button className="btn btn-secondary" onClick={() => setIsConfirmingDelete(false)}>
+              Cancelar
+            </button>
+          </span>
+        ) : (
+          <button className="btn btn-danger" onClick={() => setIsConfirmingDelete(true)}>
+            Eliminar
           </button>
-          <button onClick={() => setIsConfirmingDelete(false)}>Cancelar</button>
-        </>
-      ) : (
-        <button onClick={() => setIsConfirmingDelete(true)}>Eliminar</button>
-      )}
+        )}
+      </div>
 
-      {deleteTask.isError && <p role="alert">{deleteTask.error.message}</p>}
+      {deleteTask.isError && <p role="alert" className="alert-error">{deleteTask.error.message}</p>}
     </li>
   );
 }

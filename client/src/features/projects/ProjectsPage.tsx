@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCreateProject, useProjects } from './queries';
 import { ProjectForm } from './ProjectForm';
 import { ProjectListItem } from './ProjectListItem';
+import './ProjectsPage.css';
 
 export function ProjectsPage() {
   const { data: projects, isLoading, isError, error } = useProjects();
@@ -13,14 +14,21 @@ export function ProjectsPage() {
   }
 
   if (isError) {
-    return <p role="alert">Error al cargar proyectos: {error.message}</p>;
+    return <p role="alert" className="alert-error">Error al cargar proyectos: {error.message}</p>;
   }
 
   return (
     <div>
-      <h1>Proyectos</h1>
+      <div className="page-header">
+        <h1>Proyectos</h1>
+        {!isCreating && (
+          <button className="btn btn-primary" onClick={() => setIsCreating(true)}>
+            Nuevo proyecto
+          </button>
+        )}
+      </div>
 
-      {isCreating ? (
+      {isCreating && (
         <ProjectForm
           isSubmitting={createProject.isPending}
           onCancel={() => setIsCreating(false)}
@@ -31,16 +39,14 @@ export function ProjectsPage() {
             );
           }}
         />
-      ) : (
-        <button onClick={() => setIsCreating(true)}>Nuevo proyecto</button>
       )}
 
-      {createProject.isError && <p role="alert">{createProject.error.message}</p>}
+      {createProject.isError && <p role="alert" className="alert-error">{createProject.error.message}</p>}
 
       {projects && projects.length === 0 ? (
-        <p>Todavía no hay proyectos. Creá el primero.</p>
+        <p className="project-empty">Todavía no hay proyectos. Creá el primero.</p>
       ) : (
-        <ul>
+        <ul className="project-list">
           {projects?.map((project) => (
             <ProjectListItem key={project.id} project={project} />
           ))}

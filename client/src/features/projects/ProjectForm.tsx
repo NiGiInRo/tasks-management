@@ -18,8 +18,8 @@ export function ProjectForm({ initialProject, onSubmit, onCancel, isSubmitting }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
+    <form className="form-card" onSubmit={handleSubmit}>
+      <div className="field">
         <label htmlFor="project-name">Nombre</label>
         <input
           id="project-name"
@@ -28,7 +28,7 @@ export function ProjectForm({ initialProject, onSubmit, onCancel, isSubmitting }
           required
         />
       </div>
-      <div>
+      <div className="field">
         <label htmlFor="project-description">Descripción</label>
         <textarea
           id="project-description"
@@ -36,12 +36,14 @@ export function ProjectForm({ initialProject, onSubmit, onCancel, isSubmitting }
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <button type="submit" disabled={isSubmitting}>
-        {initialProject ? 'Guardar cambios' : 'Crear proyecto'}
-      </button>
-      <button type="button" onClick={onCancel} disabled={isSubmitting}>
-        Cancelar
-      </button>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          {initialProject ? 'Guardar cambios' : 'Crear proyecto'}
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={isSubmitting}>
+          Cancelar
+        </button>
+      </div>
     </form>
   );
 }

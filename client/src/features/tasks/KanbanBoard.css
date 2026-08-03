@@ -1,0 +1,16 @@
+.kanban-board__toolbar {
+  margin-bottom: var(--space-4);
+}
+
+.kanban-board {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+@media (max-width: 720px) {
+  .kanban-board {
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+  }
+}

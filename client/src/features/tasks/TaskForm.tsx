@@ -1,4 +1,3 @@
-
 import { useState, type FormEvent } from 'react';
 import type { Task, TaskPriority, TaskStatus } from '../../api/tasks';
 import { PRIORITY_LABELS, STATUS_LABELS, TASK_PRIORITIES, TASK_STATUSES } from '../../api/tasks';
@@ -32,12 +31,12 @@ export function TaskForm({ initialTask, onSubmit, onCancel, isSubmitting }: Task
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
+    <form className="form-card" onSubmit={handleSubmit}>
+      <div className="field">
         <label htmlFor="task-title">Título</label>
         <input id="task-title" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </div>
-      <div>
+      <div className="field">
         <label htmlFor="task-description">Descripción</label>
         <textarea
           id="task-description"
@@ -45,7 +44,7 @@ export function TaskForm({ initialTask, onSubmit, onCancel, isSubmitting }: Task
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <div>
+      <div className="field">
         <label htmlFor="task-priority">Prioridad</label>
         <select
           id="task-priority"
@@ -60,7 +59,7 @@ export function TaskForm({ initialTask, onSubmit, onCancel, isSubmitting }: Task
         </select>
       </div>
       {initialTask && (
-        <div>
+        <div className="field">
           <label htmlFor="task-status">Estado</label>
           <select
             id="task-status"
@@ -75,12 +74,14 @@ export function TaskForm({ initialTask, onSubmit, onCancel, isSubmitting }: Task
           </select>
         </div>
       )}
-      <button type="submit" disabled={isSubmitting}>
-        {initialTask ? 'Guardar cambios' : 'Crear tarea'}
-      </button>
-      <button type="button" onClick={onCancel} disabled={isSubmitting}>
-        Cancelar
-      </button>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          {initialTask ? 'Guardar cambios' : 'Crear tarea'}
+        </button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={isSubmitting}>
+          Cancelar
+        </button>
+      </div>
     </form>
   );
 }
