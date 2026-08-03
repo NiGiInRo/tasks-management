@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useProject } from './queries';
+import { KanbanBoard } from '../tasks/KanbanBoard';
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +16,7 @@ export function ProjectDetailPage() {
         <>
           <h1>{project.name}</h1>
           <p>{project.description}</p>
-          <p><em>Tablero kanban — HU-4</em></p>
+          <KanbanBoard projectId={project.id} />
         </>
       )}
     </div>
