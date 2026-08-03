@@ -83,11 +83,6 @@ Esto levanta dos contenedores Postgres: `db` (puerto `5432`, dev, con datos
 persistentes) y `db_test` (puerto `5433`, para tests de integración, sin
 persistencia — se resetea cada vez que se recrea el contenedor).
 
-> Si el puerto `5432` ya está ocupado en tu máquina (por ejemplo por una
-> instalación nativa de PostgreSQL), cambiá el mapeo de puertos en
-> `docker-compose.yml` (ej. `"5434:5432"`) y actualizá `DATABASE_URL` en el
-> `.env` del server acorde.
-
 ### 2. Backend
 
 ```bash
@@ -98,9 +93,8 @@ npm run prisma:migrate
 npm run dev
 ```
 
-- `.env.example` ya trae valores que funcionan out-of-the-box contra los
-  contenedores de Docker Compose del paso 1 — no hace falta editar nada salvo
-  que hayas cambiado los puertos.
+- `.env.example` ya trae los valores necesarios para funcionar con los
+  contenedores de Docker Compose del paso 1, sin necesidad de editarlo.
 - `npm run prisma:migrate` aplica las migraciones existentes contra `db` (dev).
 - El servidor queda escuchando en `http://localhost:3001` (`GET /health` para
   verificar que responde).
@@ -121,7 +115,7 @@ La URL base del backend está hardcodeada como `http://localhost:3001` en
 
 ### 4. Verificar
 
-Con ambos procesos corriendo y Docker levantado, abrí `http://localhost:5173`:
+Con ambos procesos corriendo y Docker levantado, abre `http://localhost:5173`:
 crear un proyecto, entrar a su detalle, crear tareas y arrastrarlas entre
 columnas del tablero.
 
@@ -132,17 +126,15 @@ sin mocks de Prisma):
 
 ```bash
 cd server
-DATABASE_URL="postgresql://postgres:postgres@localhost:5433/tasks_management_test" npx prisma migrate deploy   # solo la primera vez, o si recreaste el contenedor db_test desde cero
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/tasks_management_test" npx prisma migrate deploy   # primera vez, o tras recrear el contenedor db_test
 npm test
 ```
 
-> `db_test` usa `tmpfs` (sin persistencia): si el contenedor se recrea (no solo
-> se reinicia), hay que volver a aplicar las migraciones contra el puerto
-> `5433` antes de correr los tests, como arriba. Si el contenedor sigue vivo de
-> una corrida anterior con el schema ya aplicado, `npm test` alcanza directo.
-> `npm test` internamente usa `TEST_DATABASE_URL` del `.env` (remapeado a
-> `DATABASE_URL` en `vitest.config.ts`), no la variable de entorno de este
-> comando puntual.
+`db_test` usa `tmpfs` (sin persistencia), así que el comando de arriba aplica
+las migraciones cada vez que el contenedor se recrea desde cero. `npm test`
+usa `TEST_DATABASE_URL` del `.env` (remapeado a `DATABASE_URL` en
+`vitest.config.ts`), no la variable de entorno del comando puntual de
+migración.
 
 ## Decisiones de arquitectura
 
@@ -184,9 +176,6 @@ npm test
 
 - Sin autenticación ni autorización — cualquiera con acceso a la API puede
   operar sobre cualquier proyecto/tarea. Fuera de alcance del MVP.
-- Frontend sin sistema de estilos propio (CSS default del scaffold de Vite, con
-  algunas excepciones puntuales de estilos inline documentadas en el código
-  donde eran necesarias para que el tablero kanban fuera legible como tal).
 - No hay reordenamiento de tareas dentro de una misma columna — el drag & drop
   solo cambia `status` al mover entre columnas.
 - `GET /projects/:id/tasks` no soporta filtro por status en el contrato de la
