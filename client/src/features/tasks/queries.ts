@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as tasksApi from '../../api/tasks';
-import type { CreateTaskInput, UpdateTaskInput } from '../../api/tasks';
+import type { CreateTaskInput, Task, UpdateTaskInput } from '../../api/tasks';
 
 export const taskKeys = {
   all: (projectId: string) => ['tasks', projectId] as const,
@@ -24,13 +24,34 @@ export function useCreateTask(projectId: string) {
   });
 }
 
+interface UpdateTaskContext {
+  previousTasks?: Task[];
+}
+
 export function useUpdateTask(projectId: string) {
   const queryClient = useQueryClient();
+  const queryKey = taskKeys.all(projectId);
+
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateTaskInput }) =>
       tasksApi.updateTask(id, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.all(projectId) });
+    onMutate: async ({ id, input }): Promise<UpdateTaskContext> => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
+
+      queryClient.setQueryData<Task[]>(queryKey, (old) =>
+        old?.map((task) => (task.id === id ? { ...task, ...input } : task)),
+      );
+
+      return { previousTasks };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(queryKey, context.previousTasks);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 }

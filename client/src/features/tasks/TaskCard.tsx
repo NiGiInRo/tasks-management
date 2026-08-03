@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import type { Task, TaskPriority } from '../../api/tasks';
 import { PRIORITY_LABELS } from '../../api/tasks';
 import { TaskForm } from './TaskForm';
@@ -21,6 +23,11 @@ export function TaskCard({ task }: TaskCardProps) {
   const updateTask = useUpdateTask(task.projectId);
   const deleteTask = useDeleteTask(task.projectId);
 
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: task.id,
+    disabled: isEditing,
+  });
+
   if (isEditing) {
     return (
       <li>
@@ -41,7 +48,16 @@ export function TaskCard({ task }: TaskCardProps) {
   }
 
   return (
-    <li>
+    <li
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
+        cursor: 'grab',
+      }}
+    >
       <strong>{task.title}</strong>{' '}
       <span style={{ color: PRIORITY_COLOR[task.priority] }}>{PRIORITY_LABELS[task.priority]}</span>
       {task.description && <p>{task.description}</p>}

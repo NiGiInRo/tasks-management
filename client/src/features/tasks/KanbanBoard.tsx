@@ -1,7 +1,16 @@
 import { useState } from 'react';
-import type { Task } from '../../api/tasks';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
+import type { Task, TaskStatus } from '../../api/tasks';
 import { TASK_STATUSES } from '../../api/tasks';
-import { useCreateTask, useTasks } from './queries';
+import { useCreateTask, useTasks, useUpdateTask } from './queries';
 import { TaskForm } from './TaskForm';
 import { KanbanColumn } from './KanbanColumn';
 
@@ -21,6 +30,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const { data: tasks, isLoading, isError, error } = useTasks(projectId);
   const [isCreating, setIsCreating] = useState(false);
   const createTask = useCreateTask(projectId);
+  const updateTask = useUpdateTask(projectId);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const taskId = active.id as string;
+    const newStatus = over.id as TaskStatus;
+    const task = tasks?.find((t) => t.id === taskId);
+
+    if (!task || task.status === newStatus) return;
+
+    updateTask.mutate({ id: taskId, input: { status: newStatus } });
+  }
 
   if (isLoading) {
     return <p>Cargando tareas...</p>;
@@ -50,12 +78,15 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       )}
 
       {createTask.isError && <p role="alert">{createTask.error.message}</p>}
+      {updateTask.isError && <p role="alert">{updateTask.error.message}</p>}
 
-      <div style={{ display: 'flex', gap: '16px' }}>
-        {TASK_STATUSES.map((status) => (
-          <KanbanColumn key={status} status={status} tasks={tasksByStatus[status]} />
-        ))}
-      </div>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {TASK_STATUSES.map((status) => (
+            <KanbanColumn key={status} status={status} tasks={tasksByStatus[status]} />
+          ))}
+        </div>
+      </DndContext>
     </div>
   );
 }
